@@ -8,9 +8,10 @@ export const QUERY_STORE = gql`
       completed
       text
     }
-    product @client {
+    products @client {
       id
-      name
+      completed
+      text
     }
   }
 `;
@@ -18,10 +19,5 @@ export const QUERY_STORE = gql`
 // Initial State
 export const inititalState = {
   todos: [],
-  networkStatus: {
-    __typename: 'NetworkStatus',
-    isConnected: false,
-  },
-  counter: 0,
-  product: [],
+  products: [],
 }

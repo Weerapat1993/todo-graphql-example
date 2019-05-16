@@ -1,8 +1,8 @@
 import gql from 'graphql-tag';
 
-export const GET_PRODUCT = gql`
-  query GetProducts {
-    products @client {
+export const GET_TODO = gql`
+  query GetTodos {
+    todos @client {
       id
       text
       completed

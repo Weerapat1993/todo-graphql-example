@@ -20,7 +20,7 @@ class AddTodo extends PureComponent {
           {addProduct => (
             <div>
               <input onChange={this.handleInput} />
-              <Button color="primary" onClick={addProduct}>Add</Button>
+              <Button color="warning" onClick={addProduct}>Add</Button>
             </div>
           )}
         </Mutation>
