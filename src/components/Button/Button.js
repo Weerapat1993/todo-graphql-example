@@ -87,7 +87,7 @@ Button.defaultProps = {
   outline: false,
   children: '',
   width: 0,
-  height: 45,
+  height: 40,
   block: false,
   size: 0,
   disabled: false,

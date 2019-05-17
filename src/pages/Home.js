@@ -1,8 +1,9 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { Query } from 'react-apollo';
 import { QUERY_STORE } from '../graphql/store';
 import { AddTodo, TodoList } from './Todo';
 import { AddProduct, ProductList } from './Product';
+import { Container } from '../components';
 
 const Home = () => (
   <Query query={QUERY_STORE}>
@@ -11,7 +12,7 @@ const Home = () => (
       const products = state.products || []
       console.log(state)
       return (
-        <Fragment>
+        <Container>
           <h1>Todo List</h1>
           <AddTodo />
           <TodoList todos={todos} />
@@ -21,7 +22,7 @@ const Home = () => (
           <pre>
             {JSON.stringify(state, null, '  ')}
           </pre>
-        </Fragment>
+        </Container>
       )
     }}
   </Query>

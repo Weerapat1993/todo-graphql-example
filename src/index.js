@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { ApolloProvider } from "react-apollo";
 import { ApolloClient } from 'apollo-client';
@@ -9,6 +9,7 @@ import { theme } from './config/theme';
 import { inititalState } from './graphql/store';
 import { toggleTodo, addTodo, addProduct, toggleProduct } from './graphql/mutations';
 import * as serviceWorker from './serviceWorker';
+import { GlobalStyle } from './styles/GlobalStyle';
 
 
 const cache = new InMemoryCache();
@@ -32,7 +33,10 @@ client.onResetStore(() => cache.writeData({ data: inititalState }));
 const App = () => (
   <ApolloProvider client={client}>
     <ThemeProvider theme={theme}>
-      <Home />
+      <Fragment>
+        <GlobalStyle />
+        <Home />
+      </Fragment>
     </ThemeProvider>
   </ApolloProvider>
 )
