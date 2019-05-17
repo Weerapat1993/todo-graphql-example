@@ -62,7 +62,7 @@ export const deleteProduct = (_, { id }, { cache }) => {
   const query = GET_PRODUCT
   const state = cache.readQuery({ query });
   const data = {
-    products: [...state.products].filter(item => item.id !== id),
+    products: state.products.filter(item => item.id !== id),
   };
   cache.writeQuery({ query, data });
   return null;
