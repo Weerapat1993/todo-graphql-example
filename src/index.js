@@ -7,7 +7,7 @@ import { ThemeProvider } from 'styled-components';
 import { Home } from './pages';
 import { theme } from './config/theme';
 import { inititalState } from './graphql/store';
-import { toggleTodo, addTodo, addProduct, toggleProduct } from './graphql/mutations';
+import { toggleTodo, addTodo, addProduct, toggleProduct, deleteProduct } from './graphql/mutations';
 import * as serviceWorker from './serviceWorker';
 import { GlobalStyle } from './styles/GlobalStyle';
 
@@ -22,7 +22,7 @@ const client = new ApolloClient({
 
       addProduct,
       toggleProduct,
-      
+      deleteProduct,
     },
   },
 });

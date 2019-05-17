@@ -3,7 +3,7 @@ import uuidv4 from 'uuid/v4';
 import { GET_PRODUCT } from '../queries/product'
 import { GET_TODO } from '../queries/todo'
 import { FRAGMENT_TODO } from '../fragments/todo';
-import { GraphModel } from '../../utils/Model';
+import { GraphFragment, setTypeName } from '../../utils/Model';
 
 export const addTodo = (_, { text }, { cache }) => {
   const query = GET_TODO
@@ -31,40 +31,39 @@ export const toggleTodo = (_root, variables, { cache, getCacheKey }) => {
 export const addProduct = (_, { text }, { cache }) => {
   const query = GET_PRODUCT
   const state = cache.readQuery({ query });
-  const model = new GraphModel(state)
-  const newData = model
-    .setType('ProductItem')
-    .create({ text, completed: false })
+  const newData = setTypeName('ProductItem').create({ text, completed: false })
   const data = {
     products: [...state.products, newData],
   };
-
-  // you can also do cache.writeData({ data }) here if you prefer
   cache.writeQuery({ query, data });
   return newData;
-
-  // const query = GET_PRODUCT
-  // const previous = cache.readQuery({ query });
-  // const newProduct = { id: uuidv4(), text, completed: false, __typename: 'ProductItem' };
-  // const data = {
-  //   products: [...previous.products, newProduct],
-  // };
-
-  // // you can also do cache.writeData({ data }) here if you prefer
-  // cache.writeQuery({ query, data });
-  // return newProduct;
 }
 
 
 export const toggleProduct = (_root, variables, { cache, getCacheKey }) => {
-  const id = getCacheKey({ __typename: 'ProductItem', id: variables.id })
   const fragment = gql`
     fragment completeProduct on ProductItem {
       completed
+      text
+      id
     }
   `;
-  const product = cache.readFragment({ fragment, id });
-  const data = { ...product, completed: !product.completed };
-  cache.writeData({ id, data });
+  const model = new GraphFragment(fragment, { cache, getCacheKey })
+  model
+    .findById(variables.id)
+    .update(({ data: product, id }) => {
+      const data = { ...product, completed: !product.completed };
+      cache.writeData({ id, data });
+    })
   return null;
 };
+
+export const deleteProduct = (_, { id }, { cache }) => {
+  const query = GET_PRODUCT
+  const state = cache.readQuery({ query });
+  const data = {
+    products: [...state.products].filter(item => item.id !== id),
+  };
+  cache.writeQuery({ query, data });
+  return null;
+}
