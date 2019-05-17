@@ -1,6 +1,15 @@
 
 import gql from 'graphql-tag';
 
+export const FRAGMENT_PRODUCT = gql`
+  fragment completeProduct on ProductItem {
+    completed
+    text
+    id
+  }
+`;
+
+
 export const GET_PRODUCT = gql`
   query GetProducts {
     products @client {
