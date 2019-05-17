@@ -7,7 +7,7 @@ import { ThemeProvider } from 'styled-components';
 import { Home } from './pages';
 import { theme } from './config/theme';
 import { inititalState } from './graphql/store';
-import { toggleTodo, addTodo, addProduct, toggleProduct, deleteProduct } from './graphql/mutations';
+import { Mutation } from './graphql/Mutation'
 import * as serviceWorker from './serviceWorker';
 import { GlobalStyle } from './styles/GlobalStyle';
 
@@ -16,14 +16,7 @@ const cache = new InMemoryCache();
 const client = new ApolloClient({
   cache,
   resolvers: {
-    Mutation: {
-      addTodo,
-      toggleTodo,
-
-      addProduct,
-      toggleProduct,
-      deleteProduct,
-    },
+    Mutation,
   },
 });
 

@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import uuidv4 from 'uuid/v4';
-import { GET_PRODUCT } from '../queries/product'
+import { GET_PRODUCT } from './gql'
 import { GET_TODO } from '../queries/todo'
 import { FRAGMENT_TODO } from '../fragments/todo';
 import { GraphFragment, setTypeName } from '../../utils/Model';
