@@ -1,7 +1,6 @@
 import { GET_PRODUCT, FRAGMENT_PRODUCT } from './gql'
 import { GraphFragment, setTypeName } from '../../utils/Model';
 
-// -----------------------------------------------------------
 export const addProduct = (_, { text }, { cache }) => {
   const query = GET_PRODUCT
   const state = cache.readQuery({ query });

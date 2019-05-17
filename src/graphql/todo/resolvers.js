@@ -8,8 +8,6 @@ export const addTodo = (_, { text }, { cache }) => {
   const data = {
     todos: [...previous.todos, newTodo],
   };
-
-  // you can also do cache.writeData({ data }) here if you prefer
   cache.writeQuery({ query, data });
   return newTodo;
 }
