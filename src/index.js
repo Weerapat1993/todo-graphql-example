@@ -2,7 +2,10 @@ import React, { Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { ApolloProvider } from "react-apollo";
 import { ApolloClient } from 'apollo-client';
+import { ApolloLink } from 'apollo-link'
+import { withClientState } from 'apollo-link-state';
 import { InMemoryCache } from 'apollo-cache-inmemory';
+import { HttpLink } from 'apollo-link-http';
 import { ThemeProvider } from 'styled-components';
 import { Home } from './pages';
 import { theme } from './config/theme';
@@ -11,17 +14,18 @@ import { Mutation } from './graphql/Mutation'
 import * as serviceWorker from './serviceWorker';
 import { GlobalStyle } from './styles/GlobalStyle';
 
-
 const cache = new InMemoryCache();
-const client = new ApolloClient({
+const stateLink = withClientState({
   cache,
-  resolvers: {
-    Mutation,
-  },
+  resolvers: { Mutation },
+  defaults: inititalState,
 });
 
-cache.writeData({ data: inititalState });
-client.onResetStore(() => cache.writeData({ data: inititalState }));
+const httpLink = new HttpLink({ uri: '/graphql' })
+const client = new ApolloClient({
+  cache,
+  link: ApolloLink.from([stateLink, httpLink])
+});
 
 const App = () => (
   <ApolloProvider client={client}>
