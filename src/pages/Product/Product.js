@@ -1,7 +1,7 @@
 import React from 'react';
 import { Mutation } from 'react-apollo';
 import styled from 'styled-components'
-import { TOGGLE_PRODUCT, DELETE_PRODUCT } from '../../graphql/mutations/product';
+import { TOGGLE_PRODUCT, DELETE_PRODUCT } from '../../graphql/product/gql';
 
 const Text = styled.span`
   color: ${props => props.color || 'white'};

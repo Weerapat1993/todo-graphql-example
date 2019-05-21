@@ -1,6 +1,6 @@
 import React, { PureComponent, Fragment } from 'react';
 import { Mutation } from 'react-apollo';
-import { ADD_TODO } from '../../graphql/mutations/todo';
+import { ADD_TODO } from '../../graphql/todo/gql';
 import { Button } from '../../components';
 
 class AddTodo extends PureComponent {

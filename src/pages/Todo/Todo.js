@@ -1,6 +1,6 @@
 import React from 'react';
 import { Mutation } from 'react-apollo';
-import { TOGGLE_TODO } from '../../graphql/mutations/todo';
+import { TOGGLE_TODO } from '../../graphql/todo/gql';
 
 const Todo = ({ id, completed, text }) => (
   <Mutation mutation={TOGGLE_TODO} variables={{ id }}>

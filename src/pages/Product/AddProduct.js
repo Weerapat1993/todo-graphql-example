@@ -1,6 +1,6 @@
 import React, { PureComponent, Fragment } from 'react';
 import { Mutation } from 'react-apollo';
-import { ADD_PRODUCT } from '../../graphql/mutations/product';
+import { ADD_PRODUCT } from '../../graphql/product/gql';
 import { Button } from '../../components';
 
 class AddProduct extends PureComponent {
