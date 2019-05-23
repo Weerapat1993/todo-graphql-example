@@ -1,68 +1,314 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Local State Management (GraphQL)
 
-## Available Scripts
+Credit : [Apollo GraphQL : Local State Management](https://www.apollographql.com/docs/react/essentials/local-state)
 
-In the project directory, you can run:
+**Table of Content**
 
-### `npm start`
+- [Local State Management (GraphQL)](#local-state-management-graphql)
+  - [Managing the cache](#managing-the-cache)
+  - [Querying local state](#querying-local-state)
+  - [Updating local state](#updating-local-state)
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Managing the cache
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+When you're using Apollo Client to work with local state, your Apollo cache becomes the single source of truth for all of your local and remote data. The [Apollo cache API](https://www.apollographql.com/docs/react/advanced/caching.html) has several methods that can assist you with updating and retrieving data. Let's walk through the most relevant methods, and explore some common use cases for each one.
 
-### `npm test`
+**Folder Structure**
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```markdown
+.
+├── Mutation.js
+├── store.js
+└── todo
+    ├── gql.js
+    ├── index.js
+    └── resolvers.js
+```
 
-### `npm run build`
+**Step 1 : Create Query Store**
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Create query store when you're using local state in Apollo Client. And set `initialState` for initial data in store
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+**store.js**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```jsx
+import gql from 'graphql-tag';
 
-### `npm run eject`
+// Store
+export const QUERY_STORE = gql`
+  {
+    todos @client {
+      id
+      completed
+      text
+    }
+  }
+`;
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+// Initial State
+export const inititalState = {
+  todos: [],
+};
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+**Step 2 : Create Mutation**
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+First, Create Query `GET_TODO` for fetch data `todos` in local state.
+Next, Create Mutation `ADD_TODO` for insert data `todos` in local state.
+Then, Create Mutation `TOGGLE_TODO` for update data `todos` in local state.
+Finally, Create Mutation `DELETE_TODO` for delete data `todos` in local state.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+**gql.js**
 
-## Learn More
+```jsx
+import gql from 'graphql-tag'
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+export const GET_TODO = gql`
+  query GetTodos {
+    todos @client {
+      id
+      text
+      completed
+    }
+  }
+`;
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+export const ADD_TODO = gql`
+  mutation AddTodo($text: String!) {
+    addTodo(text: $text) @client
+  }
+`;
 
-### Code Splitting
+export const TOGGLE_TODO = gql`
+  mutation ToggleTodo($id: String!) {
+    toggleTodo(id: $id) @client
+  }
+`;
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+export const DELETE_TODO = gql`
+  mutation DeleteTodo($id: String!) {
+    deleteTodo(id: $id) @client
+  }
+`;
+```
 
-### Analyzing the Bundle Size
+**Step 3 : Create Resolver for updating local state**
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+First, Create resolver `addTodo` for insert data `todos` in local state.
+Next, Create resolver `toggleTodo` for update data `todos` in local state.
+Finally, Create resolver `deleteTodo` for delete data `todos` in local state.
 
-### Making a Progressive Web App
+**resolvers.js**
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+```jsx
+import uuidv4 from 'uuid/v4';
+import gql from 'graphql-tag'
+import { GET_TODO, FRAGMENT_TODO } from './gql'
 
-### Advanced Configuration
+// Fragment
+const FRAGMENT_TODO = gql`
+  fragment completeTodo on TodoItem {
+    completed
+  }
+`;
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+// Utiliy Function
+const setTypeName = (newState) => ({
+  __typename: 'TodoItem',
+  ...newState,
+})
 
-### Deployment
+export const addTodo = (_, { text }, { cache }) => {
+  // fetch query `todos` in store
+  const query = GET_TODO
+  const previous = cache.readQuery({ query });
+  // create new todo
+  const newTodo = setTypeName({ 
+    id: uuidv4(), 
+    text, 
+    completed: false,
+  });
+  // rewrite query `todos` in store
+  const data = {
+    todos: [...previous.todos, newTodo],
+  };
+  cache.writeQuery({ query, data });
+  return newTodo;
+}
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+export const toggleTodo = (_root, variables, { cache, getCacheKey }) => {
+  // find cache key by `__typename` and `id` in store
+  const id = getCacheKey(setTypeName({ id: variables.id }))
+  // find query `todo` by ID in store
+  const fragment = FRAGMENT_TODO;
+  const todo = cache.readFragment({ fragment, id });
+  // update data `todo` by ID in store
+  const data = { 
+    ...todo, 
+    completed: !todo.completed,
+  };
+  cache.writeData({ id, data });
+  return null;
+};
 
-### `npm run build` fails to minify
+export const deleteTodo = (_, { id }, { cache }) => {
+  // fetch query `todos` in store
+  const query = GET_TODO
+  const state = cache.readQuery({ query });
+  // remove `todo` by ID in store
+  const data = {
+    todos: state.todos.filter(item => item.id !== id),
+  };
+  cache.writeQuery({ query, data });
+  return null;
+}
+```
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+**Step 4 : Export and Combine Resolver**
+
+Export resolver in`index.js`
+
+**index.js**
+
+```jsx
+import * as todoResolvers from './resolvers';
+
+export { todoResolvers };
+```
+
+Then, combine resolver in `Mutation.js`
+
+**Mutation.js**
+
+```jsx
+import { todoResolvers } from './todo';
+
+export const Mutation = {
+  ...todoResolvers,
+};
+```
+
+Finally, You must import `Mutation`in element `ApolloProvider`(If you provided this file. You can skip this step.)
+
+```jsx
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { ApolloProvider } from "react-apollo";
+import { ApolloClient } from 'apollo-client';
+import { ApolloLink } from 'apollo-link';
+import { HttpLink } from 'apollo-link-http'
+import { withClientState } from 'apollo-link-state';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+
+// Memory Cache
+const cache = new InMemoryCache();
+
+// Local State Management
+const stateLink = withClientState({
+  cache,
+  resolvers: {
+    Mutation
+  },
+  defaults: inititalState,
+});
+
+// Http Link
+const httpLink = new HttpLink({ uri: '...' })
+
+const client = new ApolloClient({
+  cache,
+  link: ApolloLink.from([stateLink, httpLink]),
+});
+
+const App = () => (
+  <ApolloProvider client={client}>
+    <Home />
+  </ApolloProvider>
+)
+
+ReactDOM.render(<App />, document.getElementById('root'));
+```
+
+## Querying local state
+
+Querying for local data is very similar to querying your GraphQL server. The only difference is that you add a `@client` directive on your local fields to indicate they should be resolved from the Apollo Client cache or a local resolver function. Let's look at an example:
+
+```jsx
+import React, { PureComponent } from 'react'
+import { Query } from 'react-apollo';
+import { QUERY_STORE } from '../graphql/store'
+
+class Home extends PureComponent {
+  render() {
+    return (
+      <Query query={QUERY_STORE}>
+        {({ data: state, client }) => (
+          ...
+        )}
+      </Query>
+    )
+  }
+}
+```
+
+**Or Use `connectStore` in Utility Fucntion**
+
+```jsx
+import React, { PureComponent } from 'react'
+import { connectStore } from '@cto-core/core-ui'
+
+class Home extends PureComponent {
+  render() {
+    const { todos, products } = this.props;
+    return (
+      ...
+    )
+  }
+}
+
+const mapStateToProps = (state, ownProps) => ({
+  todos: state.todos,
+  products: state.products,
+})
+
+export default connectStore(mapStateToProps, QUERY_STORE)(Home);
+```
+
+## Updating local state
+
+When you're updating todo in local state. You must use `Mutation` in Apollo Client for call function to resolver
+
+**AddTodo.js**
+
+```jsx
+import React, { PureComponent } from 'react';
+import { Mutation } from 'react-apollo';
+import { ADD_TODO } from '../../graphql/todo/gql';
+import { Button } from '../../components';
+
+class AddTodo extends PureComponent {
+  state = {
+    text: '',
+  }
+
+  handleInput = (e) => {
+    this.setState({ text: e.target.value })
+  }
+
+  render() {
+    const { text } = this.state;
+    return (
+      <Mutation mutation={ADD_TODO} variables={{ text }}>
+        {addProduct => (
+          <div>
+            <input onChange={this.handleInput} />
+            <Button color="warning" onClick={addProduct}>Add</Button>
+          </div>
+        )}
+      </Mutation>
+    )
+  }
+}
+
+export default AddTodo;
+```
