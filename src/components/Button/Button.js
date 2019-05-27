@@ -28,6 +28,14 @@ const fontHoverColor = (props, color) => {
   }
 };
 
+const checkHoverColor = (props) => {
+  const { hoverTextColor, color } = props;
+  if (hoverTextColor) {
+    return hoverTextColor
+  }
+  return fontHoverColor(props, color)
+}
+
 export const Button = styled.button`
   cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
   color: ${props => props.textColor || props.outline ? fontColor(props, props.color) : '#ffffff'};
@@ -54,7 +62,7 @@ export const Button = styled.button`
   ${props => props.styled(props)}
 
   &:hover {
-    color: ${props => props.hoverTextColor || props.outline && fontHoverColor(props, props.color)};
+    color: ${checkHoverColor};
     background: ${props => props.outline ? 'transparent' : props.color && fontHoverColor(props, props.color)};
   }
 `;
